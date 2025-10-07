@@ -33,11 +33,11 @@
     "split": {
         "enabled": true,
         "usb_detect": {
-            "enabled": true,
-            "polling_interval": 10
+            "enabled": false,
+            "polling_interval": 20
         },
         "transport": {
-            "watchdog": true,
+            "watchdog": false,
             "sync": {
                 "activity": true,
                 "detected_os": true,
