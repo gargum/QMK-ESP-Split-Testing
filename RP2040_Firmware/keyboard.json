@@ -1,0 +1,79 @@
+{
+    "keyboard_name": "ESP32 SERIAL TEST",
+    "manufacturer": "Shoga",
+    "maintainer": "Gareth Gummow",
+    "bootloader": "rp2040",
+    "diode_direction": "COL2ROW",
+    "url": "https://youtu.be/dQw4w9WgXcQ",
+    "usb": {
+        "pid": "0x0001",
+        "vid": "0x0001",
+        "device_version": "0.0.0"
+    },
+    "features": {
+        "bootmagic": false,
+        "command": true,
+        "console": true,
+        "swap_hands": false,
+        "mousekey": false,
+        "extrakey": true,
+        "nkro": true,
+        "rgblight": true
+    },
+    "qmk": {
+        "locking": {
+            "enabled": true,
+            "resync": true
+        }
+    },
+    "matrix_pins": {
+        "cols": ["GP21"],
+        "rows": ["GP9"]
+    },
+    "split": {
+        "enabled": true,
+        "usb_detect": {
+            "enabled": true,
+            "polling_interval": 10
+        },
+        "transport": {
+            "watchdog": true,
+            "sync": {
+                "activity": true,
+                "detected_os": true,
+                "haptic": true,
+                "layer_state": true,
+                "indicators": true,
+                "matrix_state": true,
+                "modifiers": true,
+                "oled": true,
+                "st7565": true,
+                "wpm": true
+            }
+        }
+    },
+    "ws2812": {
+        "driver": "vendor",
+        "pin": "GP11"
+    },
+    "rgblight": {
+        "driver": "ws2812",
+        "led_count": 2,
+        "split": true,
+        "split_count": [1, 1],
+        "default": {
+            "on": true,
+            "hue": 150,
+            "sat": 30,
+            "val": 255
+        }
+    },
+    "layouts": {
+        "LAYOUT": {
+            "layout": [
+                {"label": "Left", "matrix": [0, 0], "x": 0, "y": 0},
+                {"label": "Right", "matrix": [1, 0], "x": 1, "y": 0}
+            ]
+        }
+    }
+}
