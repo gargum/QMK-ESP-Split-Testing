@@ -45,13 +45,13 @@
 //#define BLINK_ON_RECV
 #endif
 
-#define WIFI_CHAN  12 // 12-13 only legal in US in lower power mode, do not use 14 outside Japan
+#define WIFI_CHAN  13 // 12-13 only legal in US in lower power mode, do not use 14 outside Japan
 #define BAUD_RATE  115200
 #define TX_PIN     1 // default UART0 is pin 1 (shared by USB)
 #define RX_PIN     3 // default UART0 is pin 3 (shared by USB)
 #define SER_PARAMS SERIAL_8N1 // SERIAL_8N1: start/stop bits, no parity
 
-#define BUFFER_SIZE 128 // max of 128 bytes
+#define BUFFER_SIZE 32 // max of 32 bytes
 #define DEBUG // for additional serial messages (may interfere with other messages)
 
 const uint8_t broadcastAddress[] = RECVR_MAC;
@@ -59,12 +59,12 @@ const uint8_t broadcastAddress[] = RECVR_MAC;
 // SLOW PACKET SENDING
 // wait for double the time between bytes at this serial baud rate before sending a packet
 // this *should* allow for complete packet forming when using packetized serial comms
-//const uint32_t timeout_micros = (int)(1.0 / BAUD_RATE * 1E6) * 20;
+const uint32_t timeout_micros = (int)(1.0 / BAUD_RATE * 1E6) * 20;
 
 // FASTER PACKET SENDING
 // wait as little as possible between bytes at this serial baud rate before sending a packet
 // this can help prevent QMK from getting upset about slow speeds
-const uint32_t timeout_micros = (int)(1.0 / BAUD_RATE * 1E6) * 10;
+//const uint32_t timeout_micros = (int)(1.0 / BAUD_RATE * 1E6) * 10;
 
 uint8_t buf_recv[BUFFER_SIZE];
 uint8_t buf_send[BUFFER_SIZE];
@@ -120,8 +120,16 @@ void setup() {
   WiFi.mode(WIFI_STA);
 
   #ifdef DEBUG
-  Serial.print("ESP32 MAC Address: ");
-  Serial.println(WiFi.macAddress());
+  uint8_t baseMac[6];
+  esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
+  if (ret == ESP_OK) {
+    Serial.print("ESP32 MAC Address: ");
+    Serial.printf("%02x:%02x:%02x:%02x:%02x:%02x\n",
+                  baseMac[0], baseMac[1], baseMac[2],
+                  baseMac[3], baseMac[4], baseMac[5]);
+  } else {
+    Serial.println("Failed to read MAC address");
+  }
   #endif
   
   if (esp_wifi_set_channel(WIFI_CHAN, WIFI_SECOND_CHAN_NONE) != ESP_OK) {
