@@ -117,7 +117,7 @@ void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *incomingData, in
  
 void setup() {
   pinMode(PULLDOWN, OUTPUT);
-	digitalWrite(PULLDOWN, LOW);
+  digitalWrite(PULLDOWN, LOW);
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(BAUD_RATE, SER_PARAMS, RX_PIN, TX_PIN);
   Serial.println(send_timeout);
