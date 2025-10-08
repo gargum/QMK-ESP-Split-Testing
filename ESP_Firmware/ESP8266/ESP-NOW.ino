@@ -26,7 +26,11 @@
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
-#define PULLDOWN   4 // default has been chosen to work on the WeMos D1 Mini board and the barebones ESP-12F
+#define PULLDOWN     D1 // default has been chosen to work on the WeMos D1 Mini board and the barebones ESP-12F
+#define LED_PIN      D2 // default has been chosen to correspond to the builtin LED pin on the WeMos D1 Mini
+
+// Uncomment this line to enable the debug functionality
+//#define DEBUG
 
 // new structure for pairing
 typedef struct struct_pairing {       
@@ -49,12 +53,16 @@ void OnDataSent(uint8_t *mac_addr, uint8_t status) {
   char macStr[18];
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
     mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-  //Serial1.print("Last Packet Sent to: "); Serial1.println(macStr);
-  //Serial1.print("Last Packet Send Status: "); Serial1.println(status == 0 ? "Delivery Success" : "Delivery Fail");
+    #ifdef DEBUG
+      Serial1.print("Last Packet Sent to: "); Serial1.println(macStr);
+      Serial1.print("Last Packet Send Status: "); Serial1.println(status == 0 ? "Delivery Success" : "Delivery Fail");
+    #endif
   if (status != 0) {
-    Serial.print("Packet Sent to: ");
-    Serial.print(macStr);
-    Serial.println(" Delivery Fail");
+    #ifdef DEBUG
+      Serial1.print("Packet Sent to: ");
+      Serial1.print(macStr);
+      Serial1.println(" Delivery Fail");
+    #endif
     pairingStatus = NOT_PAIRED;
     memset(PairingAddress, 0xFF, sizeof(PairingAddress));
   }
@@ -65,7 +73,9 @@ void OnDataRecv(uint8_t *mac_addr, uint8_t *data, uint8_t data_len) {
   char macStr[18];
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
     mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-  //Serial1.print("Packet Recv from: "); Serial1.println(macStr);
+    #ifdef DEBUG
+      Serial1.print("Packet Recv from: "); Serial1.println(macStr);
+    #endif
 
   struct_pairing pairingData;
   memcpy(&pairingData, data, data_len);
@@ -73,10 +83,14 @@ void OnDataRecv(uint8_t *mac_addr, uint8_t *data, uint8_t data_len) {
     //Serial1.println("PAIRING_REQUEST");
     int ret;
     ret = esp_now_is_peer_exist(mac_addr);
-    Serial1.print("esp_now_is_peer_exist=");
-    Serial1.println(ret);
+    #ifdef DEBUG
+      Serial1.print("esp_now_is_peer_exist=");
+      Serial1.println(ret);
+    #endif
     if (ret < 0) {
-      Serial1.println("esp_now_is_peer_exist fail");
+      #ifdef DEBUG
+        Serial1.println("esp_now_is_peer_exist fail");
+      #endif
       return;
     }
     if (ret > 0) {
@@ -88,19 +102,25 @@ void OnDataRecv(uint8_t *mac_addr, uint8_t *data, uint8_t data_len) {
     
     ret = esp_now_add_peer(mac_addr, ESP_NOW_ROLE_COMBO, 1, NULL, 0);
     if (ret != 0) {
-      Serial1.println("esp_now_add_peer fail");
+      #ifdef DEBUG
+        Serial1.println("esp_now_add_peer fail");
+      #endif
       return;
     } else {
-      Serial1.println("esp_now_add_peer succes");
+      #ifdef DEBUG
+        Serial1.println("esp_now_add_peer succes");
+      #endif
       pairingStatus = PAIRED ; 
       for (int i=0;i<6;i++) PairingAddress[i] = mac_addr[i];
     }
 
   } else {  
-    //Serial1.println("DATA_REQUEST");
-    //Serial1.print("buffer_length=");
-    //Serial1.println(pairingData.buffer_length);
-    //Serial1.println((char*)pairingData.buffer);
+      #ifdef DEBUG
+        Serial1.println("DATA_REQUEST");
+        Serial1.print("buffer_length=");
+        Serial1.println(pairingData.buffer_length);
+        Serial1.println((char*)pairingData.buffer);
+      #endif
     memset(incomingBuffer, 0, sizeof(incomingBuffer));
     incomingPacket = true;
     memcpy(incomingBuffer, pairingData.buffer, pairingData.buffer_length);
@@ -113,17 +133,25 @@ void setup() {
   delay(1000);
   pinMode(PULLDOWN, OUTPUT);
   digitalWrite(PULLDOWN, LOW);
-  Serial1.begin(115200); // for Debug print
+  #ifdef DEBUG
+    Serial1.begin(115200); // for Debug print
+  #endif
   Serial.begin(115200); // You can change
   //Set device in STA mode to begin with
   WiFi.mode(WIFI_STA);
-  Serial1.println("ESPNow/Basic/Master Example");
+  #ifdef DEBUG
+    Serial1.println("ESPNow/Basic/Master Example");
+  #endif
   // This is the mac address of the Master in Station Mode
-  Serial1.print("STA MAC: "); Serial1.println(WiFi.macAddress());
+  #ifdef DEBUG
+    Serial1.print("STA MAC: "); Serial1.println(WiFi.macAddress());
+  #endif
   
   // Init ESP-NOW
   if (esp_now_init() != 0) {
-    Serial1.println("Error initializing ESP-NOW");
+    #ifdef DEBUG
+      Serial1.println("Error initializing ESP-NOW");
+    #endif
     return;
   }
 
@@ -139,15 +167,21 @@ void setup() {
 
 void pairing() {
   if (millis() - lastRequestMillis < 1000) return;
-  
-  Serial1.print("pairingStatus=");
-  Serial1.print(pairingStatus);
-  Serial1.print(" PairingAddress=");
+
+  #ifdef DEBUG
+    Serial1.print("pairingStatus=");
+    Serial1.print(pairingStatus);
+    Serial1.print(" PairingAddress=");
+  #endif
   for (int i=0;i<sizeof(PairingAddress);i++) {
-    Serial1.print(PairingAddress[i], HEX);
-    Serial1.print(" ");
+    #ifdef DEBUG
+      Serial1.print(PairingAddress[i], HEX);
+      Serial1.print(" ");
+    #endif
   }
-  Serial1.println();
+  #ifdef DEBUG
+    Serial1.println();
+  #endif
 
   struct_pairing pairingData;
   pairingData.msgType = PAIRING_REQUEST;
@@ -179,15 +213,13 @@ void loop() {
   }
 
   if (incomingPacket) {
-    Serial1.print("<--[");
-    Serial1.print(incomingBuffer);
-    Serial1.println("]");
+    #ifdef DEBUG
+      Serial1.print("<--[");
+      Serial1.print(incomingBuffer);
+      Serial1.println("]");
+    #endif
     Serial.print(incomingBuffer);
     incomingPacket = false;
   }
 
 }
-
-
-
- 
