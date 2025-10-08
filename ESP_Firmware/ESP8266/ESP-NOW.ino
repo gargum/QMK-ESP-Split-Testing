@@ -7,9 +7,11 @@
  *
  * Range is easily better than regular WiFi, however an external antenna may be
  *   required for truly long range messaging, to combat obstacles/walls, and/or
- *   to achieve success in an area saturated with 2.4GHz traffic.
- *   
+ *   to achieve success in an area saturated with 2.4GHz traffic.   
  *
+ * The BLINK_ON_* macros should be somewhat self-explanatory.  If your board has a built-in
+ *   LED (or you choose to wire an external one), it can indicate ESP-Now activity as
+ *   defined by the macros you choose to enable.
  * When uploading the sketch, be sure to define your pulldown pin as appropriate.
  *
  * -- Gareth Gummow - October 2025
@@ -26,11 +28,19 @@
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
-#define PULLDOWN     D1 // default has been chosen to work on the WeMos D1 Mini board and the barebones ESP-12F
-#define LED_PIN      D2 // default has been chosen to correspond to the builtin LED pin on the WeMos D1 Mini
+#define PULLDOWN     D6 // default has been chosen to work on the WeMos D1 Mini without sacrificing I2C
 
 // Uncomment this line to enable the debug functionality
 //#define DEBUG
+
+// Uncomment this line to define an onboard LED pin, if any.
+//#define LED_PIN      D2 // default has been chosen to correspond to the builtin LED pin on the WeMos D1 Mini
+
+// Uncomment these lines to enable the BLINK_ON_* macros
+// I2C cannot work on the WeMos D1 Mini board if any of these are enabled
+//#define BLINK_ON_SEND
+//#define BLINK_ON_SEND_SUCCESS
+//#define BLINK_ON_RECV
 
 // new structure for pairing
 typedef struct struct_pairing {       
@@ -48,6 +58,15 @@ char incomingBuffer[128];
 bool incomingPacket = false;
 unsigned int lastRequestMillis = 0;
 
+// simple function to blink the LED for us
+#if defined(BLINK_ON_SEND) || defined(BLINK_ON_SEND_SUCCESS) || defined(BLINK_ON_RECV)
+void Blink_LED() {
+  digitalWrite(LED_PIN, LOW);
+  delay(100);
+  digitalWrite(LED_PIN, HIGH);
+}
+#endif
+
 // callback when data is sent from Master to Slave
 void OnDataSent(uint8_t *mac_addr, uint8_t status) {
   char macStr[18];
@@ -56,6 +75,14 @@ void OnDataSent(uint8_t *mac_addr, uint8_t status) {
     #ifdef DEBUG
       Serial1.print("Last Packet Sent to: "); Serial1.println(macStr);
       Serial1.print("Last Packet Send Status: "); Serial1.println(status == 0 ? "Delivery Success" : "Delivery Fail");
+    #endif
+    #ifdef BLINK_ON_SEND
+        Blink_LED();
+    #endif
+    #ifdef BLINK_ON_SEND_SUCCESS
+        if (status == 0) {
+            Blink_LED();
+        }
     #endif
   if (status != 0) {
     #ifdef DEBUG
@@ -75,6 +102,9 @@ void OnDataRecv(uint8_t *mac_addr, uint8_t *data, uint8_t data_len) {
     mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
     #ifdef DEBUG
       Serial1.print("Packet Recv from: "); Serial1.println(macStr);
+    #endif
+    #ifdef BLINK_ON_RECV
+        Blink_LED();
     #endif
 
   struct_pairing pairingData;
@@ -127,12 +157,14 @@ void OnDataRecv(uint8_t *mac_addr, uint8_t *data, uint8_t data_len) {
   }
 }
 
-
-
 void setup() {
   delay(1000);
   pinMode(PULLDOWN, OUTPUT);
   digitalWrite(PULLDOWN, LOW);
+  #if defined(BLINK_ON_SEND) || defined(BLINK_ON_SEND_SUCCESS) || defined(BLINK_ON_RECV)
+    pinMode(LED_PIN, OUTPUT);
+    digitalWrite(LED_PIN, HIGH);
+  #endif
   #ifdef DEBUG
     Serial1.begin(115200); // for Debug print
   #endif
