@@ -13,7 +13,7 @@
  *   LED (or you choose to wire an external one), it can indicate ESP-Now activity as
  *   defined by the macros you choose to enable.
  *
- * When uploading the sketch, be sure to define BOARD1 or BOARD2 as appropriate
+ * When uploading the sketch, be sure to define LEFT or RIGHT as appropriate
  *   before compiling.
  *
  * -- Gareth Gummow - October 2025
@@ -31,9 +31,10 @@
 #include <WiFi.h>
 #include <esp_wifi.h>
 
-#define BOARD1 // BOARD1 or BOARD2
+#define LEFT // LEFT or RIGHT
 
-#ifdef BOARD1
+// Remember to define your MAC addresses appropriately
+#ifdef LEFT
 #define RECVR_MAC {0x00, 0x4B, 0x12, 0x30, 0xA6, 0xCC}
 //#define BLINK_ON_SEND
 //#define BLINK_ON_SEND_SUCCESS
@@ -49,6 +50,7 @@
 #define BAUD_RATE  115200
 #define TX_PIN     1 // default UART0 is pin 1 (shared by USB)
 #define RX_PIN     3 // default UART0 is pin 3 (shared by USB)
+#define PULLDOWN   4 // default has been chosen to work on both the Super Mini and NodeMCU form factors/pinouts
 #define SER_PARAMS SERIAL_8N1 // SERIAL_8N1: start/stop bits, no parity
 
 #define BUFFER_SIZE 32 // max of 32 bytes
@@ -114,6 +116,8 @@ void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *incomingData, in
 }
  
 void setup() {
+  pinMode(PULLDOWN, OUTPUT);
+	digitalWrite(PULLDOWN, LOW);
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(BAUD_RATE, SER_PARAMS, RX_PIN, TX_PIN);
   Serial.println(send_timeout);
