@@ -1,6 +1,6 @@
 #pragma once
 
-#define MATER_RIGHT
+#define MASTER_RIGHT
 #define SPLIT_LAYOUT
 #define SERIAL_USART_TX_PIN GP0
 #define SERIAL_USART_RX_PIN GP1
