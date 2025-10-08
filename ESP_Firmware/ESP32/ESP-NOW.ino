@@ -38,11 +38,11 @@
 #define RECVR_MAC {0x00, 0x4B, 0x12, 0x30, 0xA6, 0xCC}
 //#define BLINK_ON_SEND
 //#define BLINK_ON_SEND_SUCCESS
-#define BLINK_ON_RECV
+//#define BLINK_ON_RECV
 #else
 #define RECVR_MAC {0x78, 0x1C, 0x3C, 0xA6, 0xE0, 0x68}
 //#define BLINK_ON_SEND
-#define BLINK_ON_SEND_SUCCESS
+//#define BLINK_ON_SEND_SUCCESS
 //#define BLINK_ON_RECV
 #endif
 
@@ -54,7 +54,7 @@
 #define SER_PARAMS SERIAL_8N1 // SERIAL_8N1: start/stop bits, no parity
 
 #define BUFFER_SIZE 32 // max of 32 bytes
-#define DEBUG // for additional serial messages (may interfere with other messages)
+//#define DEBUG // for additional serial messages (may interfere with other messages)
 
 const uint8_t broadcastAddress[] = RECVR_MAC;
 
