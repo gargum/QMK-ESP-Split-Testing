@@ -9,12 +9,8 @@
  *   required for truly long range messaging, to combat obstacles/walls, and/or
  *   to achieve success in an area saturated with 2.4GHz traffic.
  *   
- * The BLINK_ON_* macros should be somewhat self-explanatory.  If your board has a built-in
- *   LED (or you choose to wire an external one), it can indicate ESP-Now activity as
- *   defined by the macros you choose to enable.
  *
- * When uploading the sketch, be sure to define BOARD1 or BOARD2 as appropriate
- *   before compiling.
+ * When uploading the sketch, be sure to define your pulldown pin as appropriate.
  *
  * -- Gareth Gummow - October 2025
  *
@@ -29,6 +25,8 @@
 
 #include <ESP8266WiFi.h>
 #include <espnow.h>
+
+#define PULLDOWN   4 // default has been chosen to work on the WeMos D1 Mini board and the barebones ESP-12F
 
 // new structure for pairing
 typedef struct struct_pairing {       
@@ -113,6 +111,8 @@ void OnDataRecv(uint8_t *mac_addr, uint8_t *data, uint8_t data_len) {
 
 void setup() {
   delay(1000);
+  pinMode(PULLDOWN, OUTPUT);
+  digitalWrite(PULLDOWN, LOW);
   Serial1.begin(115200); // for Debug print
   Serial.begin(115200); // You can change
   //Set device in STA mode to begin with
